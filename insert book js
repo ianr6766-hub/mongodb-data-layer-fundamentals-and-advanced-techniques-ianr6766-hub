@@ -1,0 +1,188 @@
+// insert_books.js
+use plp_bookstore;
+
+db.books.insertMany([
+  {
+    "title": "The Silent Forest",
+    "author": "John Smith",
+    "genre": "Fantasy",
+    "published_year": 2015,
+    "price": 1200,
+    "in_stock": true,
+    "pages": 340,
+    "publisher": "Riverdale Press"
+  },
+  {
+    "title": "Coding the Future",
+    "author": "Alice Newton",
+    "genre": "Technology",
+    "published_year": 2020,
+    "price": 2500,
+    "in_stock": true,
+    "pages": 410,
+    "publisher": "TechHouse"
+  },
+  {
+    "title": "Desert Storm",
+    "author": "Michael Adams",
+    "genre": "Action",
+    "published_year": 2011,
+    "price": 1800,
+    "in_stock": false,
+    "pages": 280,
+    "publisher": "Sunrise Media"
+  },
+  {
+    "title": "Deep Space",
+    "author": "John Smith",
+    "genre": "Sci-Fi",
+    "published_year": 2018,
+    "price": 2200,
+    "in_stock": true,
+    "pages": 500,
+    "publisher": "Galaxy Press"
+  },
+  {
+    "title": "Love and War",
+    "author": "Mary Walker",
+    "genre": "Romance",
+    "published_year": 2008,
+    "price": 950,
+    "in_stock": true,
+    "pages": 320,
+    "publisher": "Heart Publishers"
+  },
+  {
+    "title": "Mastering MongoDB",
+    "author": "Alice Newton",
+    "genre": "Technology",
+    "published_year": 2022,
+    "price": 3000,
+    "in_stock": true,
+    "pages": 380,
+    "publisher": "TechHouse"
+  },
+  {
+    "title": "Into The Light",
+    "author": "Mary Walker",
+    "genre": "Drama",
+    "published_year": 2012,
+    "price": 1100,
+    "in_stock": false,
+    "pages": 210,
+    "publisher": "Sunrise Media"
+  },
+  {
+    "title": "Ocean Whispers",
+    "author": "Michael Adams",
+    "genre": "Adventure",
+    "published_year": 2019,
+    "price": 1750,
+    "in_stock": true,
+    "pages": 450,
+    "publisher": "BlueWave"
+  },
+  {
+    "title": "The Lost Tribe",
+    "author": "John Smith",
+    "genre": "Adventure",
+    "published_year": 2010,
+    "price": 1600,
+    "in_stock": true,
+    "pages": 360,
+    "publisher": "Riverdale Press"
+  },
+  {
+    "title": "Romantic Escapades",
+    "author": "Mary Walker",
+    "genre": "Romance",
+    "published_year": 2021,
+    "price": 1400,
+    "in_stock": true,
+    "pages": 290,
+    "publisher": "Heart Publishers"
+  }
+]);
+// queries.js
+use plp_bookstore;
+
+// -----------------------
+// Basic CRUD
+// -----------------------
+
+// Find all books in a specific genre
+db.books.find({ genre: "Technology" });
+
+// Find books published after a certain year
+db.books.find({ published_year: { $gt: 2015 } });
+
+// Find books by a specific author
+db.books.find({ author: "John Smith" });
+
+// Update the price of a specific book
+db.books.updateOne(
+  { title: "Coding the Future" },
+  { $set: { price: 2600 } }
+);
+
+// Delete a book by its title
+db.books.deleteOne({ title: "Desert Storm" });
+
+
+// -----------------------
+// Task 3: Advanced Queries
+// -----------------------
+
+// Find books in stock AND published after 2010
+db.books.find({
+  in_stock: true,
+  published_year: { $gt: 2010 }
+});
+
+// Projection: return only title, author, and price
+db.books.find({}, { title: 1, author: 1, price: 1, _id: 0 });
+
+// Sort by price ascending
+db.books.find().sort({ price: 1 });
+
+// Sort by price descending
+db.books.find().sort({ price: -1 });
+
+// Pagination: 5 books per page
+// Page 1
+db.books.find().skip(0).limit(5);
+// Page 2
+db.books.find().skip(5).limit(5);
+
+
+// -----------------------
+// Task 4: Aggregation Pipelines
+// -----------------------
+
+// Average price by genre
+db.books.aggregate([
+  { $group: { _id: "$genre", averagePrice: { $avg: "$price" } } }
+]);
+
+// Author with the most books
+db.books.aggregate([
+  { $group: { _id: "$author", totalBooks: { $sum: 1 } } },
+  { $sort: { totalBooks: -1 } },
+  { $limit: 1 }
+]);
+
+// Group books by decade
+db.books.aggregate([
+  {
+    $project: {
+      decade: {
+        $subtract: [
+          "$published_year",
+          { $mod: ["$published_year", 10] }
+        ]
+      }
+    }
+  },
+  { $group: { _id: "$decade", count: { $sum: 1 } } },
+  { $sort: { _id: 1 } }
+]);
